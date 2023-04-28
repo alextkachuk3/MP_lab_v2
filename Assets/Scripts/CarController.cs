@@ -41,16 +41,32 @@ public class CarController : MonoBehaviour
     {
         horizontalInput = Input.GetAxis(HORIZONTAL);
         verticalInput = Input.GetAxis(VERTICAL);
-        isBreaking = Input.GetKey(KeyCode.Space);
+        if (horizontalInput == 0 && verticalInput == 0 )
+        {
+            isBreaking = true;
+        }
+        else
+        {
+            isBreaking = false;
+        }
     }
 
     private void HandleMotor()
     {
-        frontLeftWheelCollider.motorTorque = verticalInput * motorForce;
-        frontRightWheelCollider.motorTorque = verticalInput * motorForce;
+        if (verticalInput != 0)
+        {
+            frontLeftWheelCollider.motorTorque = verticalInput * motorForce;
+            frontRightWheelCollider.motorTorque = verticalInput * motorForce;
+        }
+        else
+        {
+            frontLeftWheelCollider.motorTorque = 0f;
+            frontRightWheelCollider.motorTorque = 0f;
+        }
         currentbreakForce = isBreaking ? breakForce : 0f;
         ApplyBreaking();
     }
+
 
     private void ApplyBreaking()
     {
@@ -78,8 +94,8 @@ public class CarController : MonoBehaviour
     private void UpdateSingleWheel(WheelCollider wheelCollider, Transform wheelTransform)
     {
         Vector3 pos;
-        Quaternion rot
-; wheelCollider.GetWorldPose(out pos, out rot);
+        Quaternion rot;
+        wheelCollider.GetWorldPose(out pos, out rot);
         wheelTransform.rotation = rot;
         wheelTransform.position = pos;
     }
