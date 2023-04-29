@@ -5,14 +5,17 @@ using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
-    private const string HORIZONTAL = "Horizontal";
-    private const string VERTICAL = "Vertical";
-
     private float horizontalInput;
     private float verticalInput;
     private float currentSteerAngle;
     private float currentbreakForce;
-    private bool isBreaking;
+    private bool isBraking;
+    private bool afterReset = false;
+    private int resetCounter = 0;
+
+    public double prevRotationY;
+
+    public bool autopilot { get; set; }
 
     [SerializeField] private float motorForce;
     [SerializeField] private float breakForce;
@@ -28,47 +31,90 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform rearLeftWheelTransform;
     [SerializeField] private Transform rearRightWheelTransform;
 
+    public void Reset()
+    {
+        afterReset = true;
+        resetCounter = 10;
+        verticalInput = 0f;
+        horizontalInput = 0f;
+        isBraking = false;
+        currentbreakForce = 0f;
+        currentSteerAngle = 0f;
+        frontLeftWheelCollider.motorTorque = 0f;
+        frontRightWheelCollider.motorTorque = 0f;
+        rearLeftWheelCollider.motorTorque = 0f;
+        rearRightWheelCollider.motorTorque = 0f;
+        frontLeftWheelCollider.brakeTorque = Mathf.Infinity;
+        frontRightWheelCollider.brakeTorque = Mathf.Infinity;
+        rearLeftWheelCollider.brakeTorque = Mathf.Infinity;
+        rearRightWheelCollider.brakeTorque = Mathf.Infinity;
+    }
+
     private void FixedUpdate()
     {
-        GetInput();
-        HandleMotor();
-        HandleSteering();
-        UpdateWheels();
+        prevRotationY = transform.rotation.y;
+        if (afterReset)
+        {
+            resetCounter -= 1;
+            if (resetCounter == 0)
+            {
+                afterReset = false;
+            }            
+        }
+        else
+        {
+            if (!autopilot)
+            {
+                GetInput();
+            }
+            HandleMotor();
+            HandleSteering();
+            UpdateWheels();
+        }
     }
 
 
     private void GetInput()
     {
-        horizontalInput = Input.GetAxis(HORIZONTAL);
-        verticalInput = Input.GetAxis(VERTICAL);
-        if (horizontalInput == 0 && verticalInput == 0 )
-        {
-            isBreaking = true;
-        }
-        else
-        {
-            isBreaking = false;
-        }
+        horizontalInput = Input.GetAxis("Horizontal");
+        // Debug.Log(horizontalInput);
+        verticalInput = Input.GetAxis("Vertical");
+        // Debug.Log(verticalInput);
+        isBraking = Input.GetKey(KeyCode.C);
+    }
+
+    public void SetInputs(float horizontalInput, float verticalInput, bool isBraking)
+    {
+        this.horizontalInput = horizontalInput;
+        this.verticalInput = verticalInput;
+        this.isBraking = isBraking;
     }
 
     private void HandleMotor()
     {
-        if (verticalInput != 0)
-        {
-            frontLeftWheelCollider.motorTorque = verticalInput * motorForce;
-            frontRightWheelCollider.motorTorque = verticalInput * motorForce;
-        }
-        else
+        currentbreakForce = isBraking ? breakForce : 0f;
+
+        if (verticalInput == 0)
         {
             frontLeftWheelCollider.motorTorque = 0f;
             frontRightWheelCollider.motorTorque = 0f;
+            rearLeftWheelCollider.motorTorque = 0f;
+            rearRightWheelCollider.motorTorque = 0f;
+            frontLeftWheelCollider.brakeTorque = 100f;
+            frontRightWheelCollider.brakeTorque = 100f;
+            rearLeftWheelCollider.brakeTorque = 100f;
+            rearLeftWheelCollider.brakeTorque = 100f;
         }
-        currentbreakForce = isBreaking ? breakForce : 0f;
-        ApplyBreaking();
+        else
+        {
+            frontLeftWheelCollider.motorTorque = verticalInput * motorForce;
+            frontRightWheelCollider.motorTorque = verticalInput * motorForce;
+            ApplyBraking();
+        }
     }
 
 
-    private void ApplyBreaking()
+    private void ApplyBraking()
     {
         frontRightWheelCollider.brakeTorque = currentbreakForce;
         frontLeftWheelCollider.brakeTorque = currentbreakForce;
