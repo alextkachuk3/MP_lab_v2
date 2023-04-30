@@ -15,7 +15,7 @@ public class CarAgent : Agent
     private CarController carController;
 
     private float horizontal;
-    private float vertical;    
+    private float vertical;
 
     public override void Initialize()
     {
@@ -33,7 +33,7 @@ public class CarAgent : Agent
         carController.Reset();
 
         transform.localPosition = originalPosition;
-        transform.localRotation = originalRotation;        
+        transform.localRotation = originalRotation;
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -75,27 +75,39 @@ public class CarAgent : Agent
 
         if (carController.prevRotationY > transform.localRotation.y)
         {
-            AddReward(1.5f);
+            // Debug.Log("Meow");
+            AddReward(1.0f);
+        }
+        else if (carController.prevRotationY < transform.localRotation.y)
+        {
+            // AddReward(-45.0f);
         }
         else
         {
-            AddReward(-0.4f);
+            // AddReward(0.1f);
         }
 
-        AddReward(-1f / MaxStep);
+        if (carController.transform.localRotation.y < 0.02)
+        {
+            AddReward(40.0f);
+            Debug.Log("Rotation success!");
+            EndEpisode();
+        }
+
+        AddReward(-0.0001f * StepCount);
     }
     private void OnTriggerEnter(Collider other)
     {
         if (other.transform.tag == "WallHorizontal")
         {
-            Debug.Log("Horizontal wall hit!");
-            AddReward(-2.0f);
+            //Debug.Log("Horizontal wall hit!");
+            // AddReward(-2500.0f);
             EndEpisode();
         }
         else if (other.transform.tag == "WallVertical")
         {
-            Debug.Log("Vertical wall hit!");
-            AddReward(-0.2f);
+            //Debug.Log("Vertical wall hit!");
+            // AddReward(-2500.0f);
             EndEpisode();
         }
     }
