@@ -14,8 +14,12 @@ public class CarController : MonoBehaviour
     private int resetCounter = 0;
 
     public double prevRotationY;
+    // public double prevPositionX;
 
     public bool autopilot { get; set; }
+
+    private Vector3 originalPosition;
+    private Quaternion originalRotation;
 
     [SerializeField] private float motorForce;
     [SerializeField] private float breakForce;
@@ -31,15 +35,25 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform rearLeftWheelTransform;
     [SerializeField] private Transform rearRightWheelTransform;
 
+    private void Start()
+    {
+        originalPosition = transform.localPosition;
+        originalRotation = transform.localRotation;
+    }
+
     public void Reset()
     {
-        afterReset = true;
         resetCounter = 10;
+        afterReset = true;               
         verticalInput = 0f;
         horizontalInput = 0f;
         isBraking = false;
         currentbreakForce = 0f;
         currentSteerAngle = 0f;
+        //frontLeftWheelCollider.steerAngle = 1.0f;
+        //frontRightWheelCollider.steerAngle = 1.0f;
+        //rearLeftWheelCollider.steerAngle = 1.0f;
+        //rearRightWheelCollider.steerAngle = 1.0f;
         frontLeftWheelCollider.motorTorque = 0f;
         frontRightWheelCollider.motorTorque = 0f;
         rearLeftWheelCollider.motorTorque = 0f;
@@ -48,11 +62,14 @@ public class CarController : MonoBehaviour
         frontRightWheelCollider.brakeTorque = Mathf.Infinity;
         rearLeftWheelCollider.brakeTorque = Mathf.Infinity;
         rearRightWheelCollider.brakeTorque = Mathf.Infinity;
+        transform.localPosition = originalPosition;
+        transform.localRotation = originalRotation;
     }
 
     private void FixedUpdate()
     {
-        prevRotationY = transform.rotation.y;
+        prevRotationY = transform.rotation.eulerAngles.y;
+        // prevPositionX = transform.localPosition.x;
         if (afterReset)
         {
             resetCounter -= 1;

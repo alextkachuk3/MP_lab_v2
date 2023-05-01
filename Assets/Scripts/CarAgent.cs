@@ -8,9 +8,7 @@ using Unity.MLAgents.Sensors;
 using UnityEngine;
 
 public class CarAgent : Agent
-{
-    private Vector3 originalPosition;
-    private Quaternion originalRotation;
+{    
     private BehaviorParameters behaviorParameters;
     private CarController carController;
     private int changeCounter;
@@ -22,8 +20,6 @@ public class CarAgent : Agent
 
     public override void Initialize()
     {
-        originalPosition = transform.localPosition;
-        originalRotation = transform.localRotation;
         behaviorParameters = GetComponent<BehaviorParameters>();
         carController = GetComponent<CarController>();
         carController.autopilot = behaviorParameters.BehaviorType == BehaviorType.Default || behaviorParameters.BehaviorType == BehaviorType.InferenceOnly;
@@ -37,8 +33,6 @@ public class CarAgent : Agent
         changeCounter = 0;
         prevDiscreteAction0 = null;
         prevDiscreteAction1 = null;
-        transform.localPosition = originalPosition;
-        transform.localRotation = originalRotation;
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -49,7 +43,6 @@ public class CarAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-
         if (prevDiscreteAction0 != null && prevDiscreteAction1 != null)
         {
             if (prevDiscreteAction0 != actions.DiscreteActions[0] && prevDiscreteAction1 != actions.DiscreteActions[1])
@@ -98,21 +91,27 @@ public class CarAgent : Agent
         carController.SetInputs(horizontal, vertical, isBraking);
 
 
-        if (carController.prevRotationY > transform.localRotation.y)
+        if (carController.prevRotationY > transform.localRotation.eulerAngles.y)
         {
-            // Debug.Log("Meow");
+            // Debug.Log("Y");
             AddReward(1.0f);
         }
-        else if (carController.prevRotationY < transform.localRotation.y)
-        {
-            // AddReward(-45.0f);
-        }
-        else
-        {
-            // AddReward(0.1f);
-        }
+        //else if (carController.prevRotationY < transform.localRotation.y)
+        //{
+        //    AddReward(-45.0f);
+        //}
+        //else
+        //{
+        //    AddReward(0.1f);
+        //}
 
-        if (carController.transform.localRotation.y < 0.02)
+        //if (carController.prevPositionX < transform.localPosition.x)
+        //{
+        //    Debug.Log("X");
+        //    AddReward(0.2f);
+        //}
+
+        if (carController.transform.localRotation.eulerAngles.y < 1)
         {
             AddReward(40.0f);
             Debug.Log("Rotation success!");
