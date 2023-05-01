@@ -13,6 +13,9 @@ public class CarAgent : Agent
     private Quaternion originalRotation;
     private BehaviorParameters behaviorParameters;
     private CarController carController;
+    private int changeCounter;
+    private int? prevDiscreteAction0;
+    private int? prevDiscreteAction1;
 
     private float horizontal;
     private float vertical;
@@ -23,7 +26,7 @@ public class CarAgent : Agent
         originalRotation = transform.localRotation;
         behaviorParameters = GetComponent<BehaviorParameters>();
         carController = GetComponent<CarController>();
-        carController.autopilot = behaviorParameters.BehaviorType == BehaviorType.Default;
+        carController.autopilot = behaviorParameters.BehaviorType == BehaviorType.Default || behaviorParameters.BehaviorType == BehaviorType.InferenceOnly;
     }
 
     public override void Heuristic(in ActionBuffers actionsOut) { }
@@ -31,7 +34,9 @@ public class CarAgent : Agent
     public override void OnEpisodeBegin()
     {
         carController.Reset();
-
+        changeCounter = 0;
+        prevDiscreteAction0 = null;
+        prevDiscreteAction1 = null;
         transform.localPosition = originalPosition;
         transform.localRotation = originalRotation;
     }
@@ -39,10 +44,29 @@ public class CarAgent : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         sensor.AddObservation(transform.localRotation.y);
+        sensor.AddObservation(changeCounter);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+
+        if (prevDiscreteAction0 != null && prevDiscreteAction1 != null)
+        {
+            if (prevDiscreteAction0 != actions.DiscreteActions[0] && prevDiscreteAction1 != actions.DiscreteActions[1])
+            {
+                changeCounter++;
+                prevDiscreteAction0 = actions.DiscreteActions[0];
+                prevDiscreteAction1 = actions.DiscreteActions[1];
+                AddReward(-0.4f * changeCounter);
+            }
+        }
+        else
+        {
+            prevDiscreteAction0 = actions.DiscreteActions[0];
+            prevDiscreteAction1 = actions.DiscreteActions[1];
+            changeCounter++;
+        }
+
         switch (actions.DiscreteActions[0])
         {
             case 0:
@@ -72,6 +96,7 @@ public class CarAgent : Agent
         bool isBraking = actions.DiscreteActions[2] == 1;
 
         carController.SetInputs(horizontal, vertical, isBraking);
+
 
         if (carController.prevRotationY > transform.localRotation.y)
         {
