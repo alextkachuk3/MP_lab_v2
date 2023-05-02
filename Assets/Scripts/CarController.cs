@@ -14,7 +14,6 @@ public class CarController : MonoBehaviour
     private int resetCounter = 0;
 
     public double prevRotationY;
-    // public double prevPositionX;
 
     public bool autopilot { get; set; }
 
@@ -49,16 +48,12 @@ public class CarController : MonoBehaviour
     public void Reset()
     {
         resetCounter = 10;
-        afterReset = true;               
+        afterReset = true;
         verticalInput = 0f;
         horizontalInput = 0f;
         isBraking = false;
         currentbreakForce = 0f;
         currentSteerAngle = 0f;
-        //frontLeftWheelCollider.steerAngle = 1.0f;
-        //frontRightWheelCollider.steerAngle = 1.0f;
-        //rearLeftWheelCollider.steerAngle = 1.0f;
-        //rearRightWheelCollider.steerAngle = 1.0f;
         frontLeftWheelCollider.motorTorque = 0f;
         frontRightWheelCollider.motorTorque = 0f;
         rearLeftWheelCollider.motorTorque = 0f;
@@ -74,14 +69,13 @@ public class CarController : MonoBehaviour
     private void FixedUpdate()
     {
         prevRotationY = transform.rotation.eulerAngles.y;
-        // prevPositionX = transform.localPosition.x;
         if (afterReset)
         {
             resetCounter -= 1;
             if (resetCounter == 0)
             {
                 afterReset = false;
-            }            
+            }
         }
         else
         {
@@ -99,9 +93,7 @@ public class CarController : MonoBehaviour
     private void GetInput()
     {
         horizontalInput = Input.GetAxis("Horizontal");
-        // Debug.Log(horizontalInput);
         verticalInput = Input.GetAxis("Vertical");
-        // Debug.Log(verticalInput);
         isBraking = Input.GetKey(KeyCode.C);
     }
 

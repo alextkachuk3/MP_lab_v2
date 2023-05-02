@@ -41,10 +41,8 @@ public class CarAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        //sensor.AddObservation(transform.localRotation.y);
-        //sensor.AddObservation(isBrakingChangeCounter);
         sensor.AddObservation(actionChangeCounter);
-        sensor.AddObservation(carController.GetRPM());        
+        sensor.AddObservation(carController.GetRPM());
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -114,29 +112,8 @@ public class CarAgent : Agent
 
         if (carController.prevRotationY > transform.localRotation.eulerAngles.y)
         {
-            // Debug.Log("Y");
             AddReward(3.2f);
         }
-        //else if (carController.prevRotationY < transform.localRotation.y)
-        //{
-        //    AddReward(-45.0f);
-        //}
-        //else
-        //{
-        //    AddReward(0.1f);
-        //}
-
-        //if (carController.prevPositionX < transform.localPosition.x)
-        //{
-        //    Debug.Log("X");
-        //    AddReward(0.2f);
-        //}
-
-        //if (carController.transform.localRotation.eulerAngles.y > 180)
-        //{
-        //    AddReward(-0.5f);
-        //    // Debug.Log("Y big");
-        //}
 
         if (carController.transform.localRotation.eulerAngles.y < 1 && carController.transform.localPosition.x > 0)
         {
@@ -151,14 +128,10 @@ public class CarAgent : Agent
     {
         if (other.transform.tag == "WallHorizontal")
         {
-            //Debug.Log("Horizontal wall hit!");
-            // AddReward(-2500.0f);
             EndEpisode();
         }
         else if (other.transform.tag == "WallVertical")
         {
-            //Debug.Log("Vertical wall hit!");
-            // AddReward(-2500.0f);
             EndEpisode();
         }
     }
