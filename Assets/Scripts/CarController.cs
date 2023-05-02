@@ -41,6 +41,11 @@ public class CarController : MonoBehaviour
         originalRotation = transform.localRotation;
     }
 
+    public float GetRPM()
+    {
+        return frontLeftWheelCollider.rpm;
+    }
+
     public void Reset()
     {
         resetCounter = 10;

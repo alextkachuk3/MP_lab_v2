@@ -8,12 +8,15 @@ using Unity.MLAgents.Sensors;
 using UnityEngine;
 
 public class CarAgent : Agent
-{    
+{
     private BehaviorParameters behaviorParameters;
     private CarController carController;
-    private int changeCounter;
+    private int isBrakingChangeCounter;
+    private int actionChangeCounter;
     private int? prevDiscreteAction0;
     private int? prevDiscreteAction1;
+    private int? prevDiscreteAction2;
+
 
     private float horizontal;
     private float vertical;
@@ -30,34 +33,52 @@ public class CarAgent : Agent
     public override void OnEpisodeBegin()
     {
         carController.Reset();
-        changeCounter = 0;
+        actionChangeCounter = 0;
         prevDiscreteAction0 = null;
         prevDiscreteAction1 = null;
+        prevDiscreteAction2 = null;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        sensor.AddObservation(transform.localRotation.y);
-        sensor.AddObservation(changeCounter);
+        //sensor.AddObservation(transform.localRotation.y);
+        //sensor.AddObservation(isBrakingChangeCounter);
+        sensor.AddObservation(actionChangeCounter);
+        sensor.AddObservation(carController.GetRPM());        
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
         if (prevDiscreteAction0 != null && prevDiscreteAction1 != null)
         {
-            if (prevDiscreteAction0 != actions.DiscreteActions[0] && prevDiscreteAction1 != actions.DiscreteActions[1])
+            if (prevDiscreteAction0 != actions.DiscreteActions[0] || prevDiscreteAction1 != actions.DiscreteActions[1])
             {
-                changeCounter++;
+                actionChangeCounter++;
                 prevDiscreteAction0 = actions.DiscreteActions[0];
                 prevDiscreteAction1 = actions.DiscreteActions[1];
-                AddReward(-0.4f * changeCounter);
+                AddReward(-0.6f * actionChangeCounter);
             }
         }
         else
         {
+            actionChangeCounter++;
             prevDiscreteAction0 = actions.DiscreteActions[0];
             prevDiscreteAction1 = actions.DiscreteActions[1];
-            changeCounter++;
+        }
+
+        if (prevDiscreteAction2 == null)
+        {
+            isBrakingChangeCounter++;
+            prevDiscreteAction2 = actions.DiscreteActions[2];
+        }
+        else
+        {
+            if (prevDiscreteAction2 != actions.DiscreteActions[2])
+            {
+                isBrakingChangeCounter++;
+                prevDiscreteAction2 = actions.DiscreteActions[2];
+                AddReward(-0.02f * isBrakingChangeCounter);
+            }
         }
 
         switch (actions.DiscreteActions[0])
@@ -94,7 +115,7 @@ public class CarAgent : Agent
         if (carController.prevRotationY > transform.localRotation.eulerAngles.y)
         {
             // Debug.Log("Y");
-            AddReward(1.0f);
+            AddReward(3.2f);
         }
         //else if (carController.prevRotationY < transform.localRotation.y)
         //{
@@ -111,14 +132,20 @@ public class CarAgent : Agent
         //    AddReward(0.2f);
         //}
 
-        if (carController.transform.localRotation.eulerAngles.y < 1)
+        //if (carController.transform.localRotation.eulerAngles.y > 180)
+        //{
+        //    AddReward(-0.5f);
+        //    // Debug.Log("Y big");
+        //}
+
+        if (carController.transform.localRotation.eulerAngles.y < 1 && carController.transform.localPosition.x > 0)
         {
-            AddReward(40.0f);
+            AddReward(45.0f);
             Debug.Log("Rotation success!");
             EndEpisode();
         }
 
-        AddReward(-0.0001f * StepCount);
+        AddReward(-0.00025f * StepCount);
     }
     private void OnTriggerEnter(Collider other)
     {
