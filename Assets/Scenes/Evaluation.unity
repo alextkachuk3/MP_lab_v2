@@ -256,7 +256,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -119.7
+      value: -137.9
       objectReference: {fileID: 0}
     - target: {fileID: 6301142851818038027, guid: 62010132604e8c94d96b4cb4fe6d3394, type: 3}
       propertyPath: m_LocalRotation.w
@@ -911,8 +911,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prevRotationY: 0
-  motorForce: 700
-  breakForce: 900
+  motorForce: 700000
+  breakForce: 900000
   maxSteerAngle: 30
   frontLeftWheelCollider: {fileID: 753143572}
   frontRightWheelCollider: {fileID: 666896448}
